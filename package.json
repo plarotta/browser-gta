@@ -1,0 +1,17 @@
+{
+  "name": "browser-gta",
+  "version": "1.0.0",
+  "description": "mvp for browser gta project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "author": "Pedro Leandro La Rotta",
+  "license": "ISC",
+  "devDependencies": {
+    "vite": "^6.3.5"
+  }
+}
