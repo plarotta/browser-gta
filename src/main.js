@@ -62,7 +62,7 @@ const minimap = {
 };
 
 const NUM_OBSTACLES = 200;
-const NUM_NPC = 50;
+// const NUM_NPC = 50;
 const obstacles = [];
 
 // Generate obstacles randomly inside world bounds
@@ -75,18 +75,28 @@ function generateObstacles() {
     obstacles.push({ x, y, w, h });
   }
 }
-generateObstacles();
 
 
 // Create NPCs
-const npcs = [];
-for (let i = 0; i < NUM_NPC; i++) {
-    const w = 30 + Math.random() * 50;
-    const h = 30 + Math.random() * 50;
-    const x = Math.random() * (WORLD_WIDTH - w);
-    const y = Math.random() * (WORLD_HEIGHT - h);
-    npcs.push(new NPC(x, y, followPlayerPolicy));
-}
+let npcs = [];
+let running = false;
+export function startGame(numNPC) {
+    npcs = [];
+    for (let i = 0; i < numNPC; i++) {
+      const w = 30 + Math.random() * 50;
+      const h = 30 + Math.random() * 50;
+      const x = Math.random() * (WORLD_WIDTH - w);
+      const y = Math.random() * (WORLD_HEIGHT - h);
+      npcs.push(new NPC(x, y, followPlayerPolicy));
+    }
+  
+    // Show the canvas and hide the landing page
+    document.getElementById("landing").style.display = "none";
+    canvas.style.display = "block";
+    generateObstacles();
+    running = true;  
+    loop(); // start the game loop
+  }
 
 // Utility functions
 function rectsOverlap(r1, r2) {
@@ -145,7 +155,6 @@ function update() {
       worldHeight: WORLD_HEIGHT,
     });
   }
-  
 }
 
 function movePlayer() {
@@ -354,8 +363,12 @@ function drawMinimap() {
   }
 }
 
+
+
 // Main loop
 function loop() {
+
+  if (!running) return;
   update();
 
   // Update camera position based on player or car
@@ -374,6 +387,3 @@ function loop() {
 
   requestAnimationFrame(loop);
 }
-
-loop();
-

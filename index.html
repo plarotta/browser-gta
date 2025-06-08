@@ -1,11 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GTA Lite</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <canvas id="game" width="800" height="600"></canvas>
-  <script type="module" src="/src/main.js"></script>
+  <div id="landing">
+    <h1>GTA Lite</h1>
+    <label for="difficulty">Select Difficulty:</label>
+    <select id="difficulty">
+      <option value="10">Easy (10 NPCs)</option>
+      <option value="30" selected>Medium (30 NPCs)</option>
+      <option value="50">Hard (50 NPCs)</option>
+      <option value="100">Extreme (100 NPCs)</option>
+    </select>
+    <button id="startBtn">Start Game</button>
+  </div>
+
+  <canvas id="game" width="800" height="600" style="display:none;">
+    Your browser does not support the HTML5 canvas element.
+  </canvas>
+
+  <script type="module" src="./src/main.js"></script>
+  <script type="module">
+    import { startGame } from './src/main.js';
+  
+    const startBtn = document.getElementById('startBtn');
+    const difficultySelect = document.getElementById('difficulty');
+  
+    startBtn.addEventListener('click', () => {
+      const numNPC = parseInt(difficultySelect.value, 10);
+      startGame(numNPC);
+    });
+  </script>
 </body>
 </html>
