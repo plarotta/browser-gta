@@ -10,9 +10,15 @@ const WORLD_HEIGHT = canvas.height * 4;
 const keys = {};
 const prevKeys = {};
 
+let damageCooldown = 0;
+const DAMAGE_COOLDOWN_TIME = 60; // frames (~1 second at 60fps)
+
 // Input handling
 document.addEventListener("keydown", (e) => {
   keys[e.key.toLowerCase()] = true;
+  if (!player.alive && e.key === "r") {
+    restartGame();
+  }
 });
 document.addEventListener("keyup", (e) => {
   keys[e.key.toLowerCase()] = false;
@@ -26,6 +32,8 @@ const player = {
   h: 20,
   speed: 2,
   inCar: false,
+  health: 100,  // starting health
+  alive: true,
 };
 
 const car = {
@@ -108,6 +116,15 @@ function rectsOverlap(r1, r2) {
   );
 }
 
+function checkPlayerNpcCollision() {
+    for (const npc of npcs) {
+      if (rectsOverlap(player, npc)) {
+        return npc;
+      }
+    }
+    return null;
+  }
+
 function clampToWorld(obj) {
   obj.x = Math.max(0, Math.min(WORLD_WIDTH - obj.w, obj.x));
   obj.y = Math.max(0, Math.min(WORLD_HEIGHT - obj.h, obj.y));
@@ -120,6 +137,19 @@ function nearCar() {
 function keyJustPressed(k) {
   return keys[k] && !prevKeys[k];
 }
+
+function restartGame() {
+    player.x = 100;
+    player.y = 100;
+    player.health = 100;
+    player.alive = true;
+    player.inCar = false;
+    car.x = 150;
+    car.y = 150;
+    damageCooldown = 0;
+  
+    // Optionally respawn/re-randomize NPCs too
+  }
 
 function insideCameraView(obj) {
   return !(
@@ -155,9 +185,28 @@ function update() {
       worldHeight: WORLD_HEIGHT,
     });
   }
+  if (!player.inCar) {
+    if (damageCooldown > 0) damageCooldown--;
+
+    const collidedNpc = checkPlayerNpcCollision();
+    if (collidedNpc && damageCooldown === 0 && player.alive) {
+      player.health -= 10;
+      player.health = Math.max(0, player.health);
+      damageCooldown = DAMAGE_COOLDOWN_TIME;
+
+      if (player.health === 0) {
+        player.alive = false;
+        console.log("Player has died!");
+        // Optional: trigger any death animation or game over logic here
+      }
+
+      console.log(`Player hit by NPC! Health: ${player.health}`);
+    }
+  }
 }
 
 function movePlayer() {
+  if (!player.alive) return;
   let newX = player.x;
   let newY = player.y;
 
@@ -175,6 +224,7 @@ function movePlayer() {
 }
 
 function handleCarEntryExit() {
+  if (!player.alive) return;
   if (keyJustPressed("e") && nearCar()) {
     player.inCar = !player.inCar;
     if (player.inCar) {
@@ -189,7 +239,8 @@ function handleCarEntryExit() {
   }
 }
 
-function driveCar() {
+function driveCar() { 
+  if (!player.alive) return;
   if (keys["arrowup"]) {
     car.speed = Math.min(car.speed + 0.1, car.maxSpeed);
   } else if (keys["arrowdown"]) {
@@ -241,6 +292,7 @@ function draw() {
   drawCar();
   drawPlayer();
   drawMinimap();
+  drawHealthBar();
 
   for (const npc of npcs) {
     const screenX = npc.x - camera.x;
@@ -255,6 +307,9 @@ function draw() {
       ctx.fillStyle = "green";
       ctx.fillRect(screenX, screenY, npc.w, npc.h);
     }
+  }
+  if (!player.alive) {
+    drawGameOver();
   }
 }
 
@@ -363,7 +418,36 @@ function drawMinimap() {
   }
 }
 
+function drawHealthBar() {
+    const barWidth = 200;
+    const barHeight = 20;
+    const x = 20;
+    const y = 20;
+  
+    ctx.fillStyle = "#444";
+    ctx.fillRect(x, y, barWidth, barHeight);
+  
+    const healthWidth = (player.health / 100) * barWidth;
+    ctx.fillStyle = "limegreen";
+    ctx.fillRect(x, y, healthWidth, barHeight);
+  
+    ctx.strokeStyle = "black";
+    ctx.strokeRect(x, y, barWidth, barHeight);
+  
+    ctx.fillStyle = "white";
+    ctx.font = "16px sans-serif";
+    ctx.fillText(`Health: ${player.health}`, x + 10, y + 16);
+  }
 
+  function drawGameOver() {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+    ctx.fillStyle = "white";
+    ctx.font = "48px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2);
+  }
 
 // Main loop
 function loop() {
