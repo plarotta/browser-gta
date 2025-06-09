@@ -70,7 +70,6 @@ const minimap = {
 };
 
 const NUM_OBSTACLES = 200;
-// const NUM_NPC = 50;
 const obstacles = [];
 
 // Generate obstacles randomly inside world bounds
@@ -83,7 +82,6 @@ function generateObstacles() {
     obstacles.push({ x, y, w, h });
   }
 }
-
 
 // Create NPCs
 let npcs = [];
